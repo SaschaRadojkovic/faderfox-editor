@@ -1598,7 +1598,7 @@ document.addEventListener('DOMContentLoaded', function () {
       encEl.classList.add('dragging');
     });
     knob.addEventListener('dragend', (e) => {
-      e.currentTarget.classList.remove('dragging');
+      DOM.removeClass('#ctrlcontainer .enc', 'dragging');
       DOM.removeClass('#ctrlcontainer .enc', 'droptarget');
       dragEnc = null;
     });
