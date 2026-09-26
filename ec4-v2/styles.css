@@ -313,8 +313,33 @@ main section {
 }
 
 .enc .selbox input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
   margin: 0;
   cursor: pointer;
+  border: 1px solid #6a6;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+.enc .selbox input:checked {
+  background: #4fd06e;
+  border-color: #4fd06e;
+}
+
+.enc .selbox input:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid #000;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }
 
 .enc .knob {
@@ -728,6 +753,16 @@ main section {
   color: #000;
   border-color: #000;
   font-weight: bold;
+}
+
+.pegid .pord {
+  display: inline-block;
+  margin-left: 3px;
+  padding: 0 3px;
+  font-size: 0.7em;
+  border-radius: 3px;
+  background: #000;
+  color: #feff5f;
 }
 
 .pegid span:hover {

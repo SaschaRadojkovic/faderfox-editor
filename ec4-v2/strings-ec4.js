@@ -65,7 +65,7 @@ let SEC4 = {
     'Please check the box of at least one encoder in the group before copying.',
   $msg_copy_encs: 'Copied encoder(s) {} to the clipboard.',
   $msg_paste_encs_intro:
-    'Paste the <b>{} copied encoder(s)</b> into group {} ({}).<br/><b>Copied:</b> {}<br/><br/>Click the target positions in the grid below (row by row, from top left to bottom right). Each clicked position receives the next copied encoder in order. Click a position again to uncheck it.',
+    'Paste the <b>{} copied encoder(s)</b> into group {} ({}).<br/><b>Copied:</b> {}<br/><br/>Click the target positions in the grid below in the order you want them pasted: the position you click <b>first</b> receives the <b>first</b> copied encoder, the position you click second receives the second one, and so on (the number shown on each position is its paste order). Click a position again to uncheck it.',
   paste_enc_tooltip: 'Toggle as paste target position',
   paste_btn_paste: 'Paste',
   msg_no_targets: 'Please select at least one target position in the grid!',

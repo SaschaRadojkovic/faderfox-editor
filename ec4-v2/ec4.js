@@ -1489,7 +1489,7 @@ document.addEventListener('DOMContentLoaded', function () {
     )}</p></div><div class="pegid">`;
     for (let i = 0; i < 16; i++) {
       const encName = String(P.get(selection, i, P.name)).trim();
-      html += `<span class="pecell" data-p="0" data-enc="${i}" title="${
+      html += `<span class="pecell" data-p="0" data-enc="${i}" data-name="${encName}" title="${
         SEC4.paste_enc_tooltip
       }">${encName}</span>`;
     }
@@ -1505,9 +1505,19 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       DOM.element('#pecount').innerText = count;
     }
+    let clickOrder = 0;
     DOM.on('#pasteencs .pecell', 'click', (e) => {
       const el = e.target;
-      el.setAttribute('data-p', el.getAttribute('data-p') === '1' ? 0 : 1);
+      if (el.getAttribute('data-p') === '1') {
+        el.setAttribute('data-p', '0');
+        el.removeAttribute('data-ord');
+        el.textContent = el.getAttribute('data-name');
+      } else {
+        clickOrder++;
+        el.setAttribute('data-p', '1');
+        el.setAttribute('data-ord', clickOrder);
+        el.innerHTML = `${el.getAttribute('data-name')}<span class="pord">${clickOrder}</span>`;
+      }
       updateCount();
     });
     function closeDialog() {
@@ -1520,12 +1530,17 @@ document.addEventListener('DOMContentLoaded', function () {
         closeDialog();
         return;
       }
-      const targets = [];
+      const cells = [];
       DOM.all('#pasteencs .pecell', (el) => {
         if (el.getAttribute('data-p') === '1') {
-          targets.push(parseInt(el.getAttribute('data-enc')));
+          cells.push({
+            enc: parseInt(el.getAttribute('data-enc')),
+            ord: parseInt(el.getAttribute('data-ord')) || 0,
+          });
         }
       });
+      cells.sort((a, b) => a.ord - b.ord);
+      const targets = cells.map((c) => c.enc);
       if (targets.length === 0) {
         MBox.show(SEC4.title_copypaste, SEC4.msg_no_targets, {
           hideAfter: 5000,
