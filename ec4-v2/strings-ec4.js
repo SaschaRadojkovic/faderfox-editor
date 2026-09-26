@@ -63,7 +63,17 @@ let SEC4 = {
 
   msg_no_encs_selected:
     'Please check the box of at least one encoder in the group before copying.',
-  $msg_copy_encs: 'Copied encoder(s) {} to the clipboard.',
+  $msg_copy_encs:
+    'Copied encoder(s) {} to the clipboard ({}).',
+  $msg_copy_encs_intro:
+    'Copy <b>{} encoder(s)</b> ({}):<br/>Select which parts of the encoders should be copied:',
+  copy_enc_rotary: 'Encoder (knob) settings — type, channel, number, values, link, mode, display, name',
+  copy_enc_push: 'Push button settings — type, channel, number, mode, values, link',
+  copy_btn: 'Copy',
+  msg_no_copy_parts:
+    'Select at least one part to copy (knob settings and/or push button settings)!',
+  copy_parts_rotary: 'knob settings',
+  copy_parts_push: 'push button settings',
   $msg_paste_encs_intro:
     'Paste the <b>{} copied encoder(s)</b> into group {} ({}).<br/><b>Copied:</b> {}<br/><br/>Click the target positions in the grid below in the order you want them pasted: the position you click <b>first</b> receives the <b>first</b> copied encoder, the position you click second receives the second one, and so on (the number shown on each position is its paste order). Click a position again to uncheck it.',
   paste_enc_tooltip: 'Toggle as paste target position',

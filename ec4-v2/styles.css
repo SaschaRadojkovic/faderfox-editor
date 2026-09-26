@@ -721,9 +721,54 @@ main section {
   z-index: 100;
 }
 
+#dimco {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.67);
+  z-index: 100;
+}
+
 #mbox,
 #mboxtemp {
   z-index: 102;
+}
+
+#copyencs {
+  position: fixed;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ccc linear-gradient(#ccc, #aaa);
+  padding: 0 10px 10px 10px;
+  box-shadow: 0 0 8px #000;
+  border: 2px solid #000;
+  border-radius: 4px;
+  z-index: 101;
+}
+
+#copyencs .content {
+  max-width: 500px;
+  margin: 0 auto 0.5em auto;
+  color: #000;
+  padding: 0 0.75em;
+  box-sizing: border-box;
+  font-size: 0.8em;
+}
+
+#copyencs .coopt {
+  display: block;
+  margin: 0.5em 0;
+}
+
+#copyencs button {
+  margin: 0 0.75em;
+}
+
+#copyencs button.default {
+  font-weight: bold;
 }
 
 #pasteencs {

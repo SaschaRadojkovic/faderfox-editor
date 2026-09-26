@@ -1407,7 +1407,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
   }
-  const ENCODER_PARAMS = [
+  const ENCODER_ROTARY_PARAMS = [
     'type',
     'channel',
     'number',
@@ -1420,6 +1420,8 @@ document.addEventListener('DOMContentLoaded', function () {
     'mode',
     'scale',
     'name',
+  ];
+  const PUSH_BUTTON_PARAMS = [
     'pb_channel',
     'pb_display',
     'pb_type',
@@ -1429,10 +1431,11 @@ document.addEventListener('DOMContentLoaded', function () {
     'pb_lower',
     'pb_upper',
   ];
+  const ENCODER_PARAMS = [...ENCODER_ROTARY_PARAMS, ...PUSH_BUTTON_PARAMS];
 
-  function encoderParams(sel, enc) {
+  function encoderParams(sel, enc, keys) {
     const p = {};
-    for (const key of ENCODER_PARAMS) {
+    for (const key of keys || ENCODER_PARAMS) {
       p[key] = P.get(sel, enc, key);
     }
     return p;
@@ -1454,8 +1457,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function copyEncoderSelection() {
     const encs = [];
     DOM.all('#ctrlcontainer input[data-selenc]:checked', (el) => {
-      const enc = parseInt(el.getAttribute('data-selenc'));
-      encs.push({ enc: enc, params: encoderParams(selection, enc) });
+      encs.push(parseInt(el.getAttribute('data-selenc')));
     });
     if (encs.length === 0) {
       MBox.show(SEC4.title_copypaste, SEC4.msg_no_encs_selected, {
@@ -1463,16 +1465,61 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       return;
     }
-    encs.sort((a, b) => a.enc - b.enc);
-    MEM.clipboardDataEncs = encs;
+    encs.sort((a, b) => a - b);
     const names = encs
-      .map((e) => `#${e.enc + 1} (${String(e.params.name).trim()})`)
+      .map(
+        (enc) =>
+          `#${enc + 1} (${String(P.get(selection, enc, P.name)).trim()})`
+      )
       .join(', ');
-    MBox.show(
-      SEC4.title_copypaste,
-      STR.apply(SEC4.$msg_copy_encs, names),
-      { hideAfter: 5000 }
-    );
+    const html = `<div id="dimco"></div><div id="copyencs"><div class="content"><p>${STR.apply(
+      SEC4.$msg_copy_encs_intro,
+      encs.length,
+      names
+    )}</p><label class="coopt"><input type="checkbox" data-cpart="rotary" checked/>${
+      SEC4.copy_enc_rotary
+    }</label><label class="coopt"><input type="checkbox" data-cpart="push" checked/>${
+      SEC4.copy_enc_push
+    }</label></div><div class="content"><button class="default" data-cenc="copy">${
+      SEC4.copy_btn
+    }</button><button data-cenc="cancel">Cancel</button></div></div>`;
+    DOM.addHTML('body', 'beforeend', html);
+    function closeDialog() {
+      DOM.element('#copyencs').remove();
+      DOM.element('#dimco').remove();
+    }
+    DOM.on('#copyencs button[data-cenc="cancel"]', 'click', closeDialog);
+    DOM.on('#copyencs button[data-cenc="copy"]', 'click', () => {
+      const parts = [];
+      DOM.all('#copyencs input[data-cpart]:checked', (el) => {
+        parts.push(el.getAttribute('data-cpart'));
+      });
+      if (parts.length === 0) {
+        MBox.show(SEC4.title_copypaste, SEC4.msg_no_copy_parts, {
+          hideAfter: 5000,
+        });
+        return;
+      }
+      const keys = ENCODER_PARAMS.filter((k) =>
+        parts.includes(PUSH_BUTTON_PARAMS.includes(k) ? 'push' : 'rotary')
+      );
+      closeDialog();
+      MEM.clipboardDataEncs = encs.map((enc) => ({
+        enc: enc,
+        name: String(P.get(selection, enc, P.name)).trim(),
+        params: encoderParams(selection, enc, keys),
+      }));
+      const partLabel = parts
+        .map((p) =>
+          p === 'rotary' ? SEC4.copy_parts_rotary : SEC4.copy_parts_push
+        )
+        .join(' + ');
+      MBox.show(
+        SEC4.title_copypaste,
+        STR.apply(SEC4.$msg_copy_encs, names, partLabel),
+        { hideAfter: 5000 }
+      );
+    });
   }
 
   function pasteEncoderSelection() {
@@ -1484,7 +1531,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     const n = MEM.clipboardDataEncs.length;
     const copiedNames = MEM.clipboardDataEncs
-      .map((e) => `#${e.enc + 1} (${String(e.params.name).trim()})`)
+      .map(
+        (e) =>
+          `#${e.enc + 1} (${String(e.name || (e.params && e.params.name) || '').trim()})`
+      )
       .join(', ');
     let html = `<div id="dimpe"></div><div id="pasteencs"><div class="content"><p>${STR.apply(
       SEC4.$msg_paste_encs_intro,
