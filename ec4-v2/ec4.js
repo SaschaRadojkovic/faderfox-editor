@@ -1445,6 +1445,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+  function swapEncoders(a, b) {
+    const pa = encoderParams(selection, a);
+    const pb = encoderParams(selection, b);
+    setEncoderParams(selection, a, pb);
+    setEncoderParams(selection, b, pa);
+  }
+
   function copyEncoderSelection() {
     const encs = [];
     DOM.all('#ctrlcontainer input[data-selenc]:checked', (el) => {
@@ -1576,6 +1583,61 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
+  // Drag & drop: swap two encoders within the current group
+  let dragEnc = null;
+  DOM.all('#ctrlcontainer .enc .knob', (knob) => {
+    knob.addEventListener('dragstart', (e) => {
+      const encEl = knob.closest('.enc');
+      dragEnc = parseInt(encEl.getAttribute('data-enc'));
+      e.dataTransfer.effectAllowed = 'move';
+      try {
+        e.dataTransfer.setData('text/plain', String(dragEnc));
+      } catch (err) {
+        // ignore (required on some browsers to enable dragging)
+      }
+      encEl.classList.add('dragging');
+    });
+    knob.addEventListener('dragend', (e) => {
+      e.currentTarget.classList.remove('dragging');
+      DOM.removeClass('#ctrlcontainer .enc', 'droptarget');
+      dragEnc = null;
+    });
+  });
+  DOM.all('#ctrlcontainer .enc', (encEl) => {
+    const enc = parseInt(encEl.getAttribute('data-enc'));
+    encEl.addEventListener('dragover', (e) => {
+      if (dragEnc === null || enc === dragEnc) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      DOM.addClass(encEl, 'droptarget');
+    });
+    encEl.addEventListener('dragleave', () => {
+      DOM.removeClass(encEl, 'droptarget');
+    });
+    encEl.addEventListener('drop', (e) => {
+      e.preventDefault();
+      DOM.removeClass(encEl, 'droptarget');
+      if (dragEnc === null || enc === dragEnc) return;
+      const a = dragEnc;
+      dragEnc = null;
+      MBox.show(
+        SEC4.title_swap,
+        STR.apply(SEC4.$msg_swap, `${a + 1}`, `${enc + 1}`),
+        {
+          buttonLabel: SEC4.swap_btn,
+          confirmCallback: function () {
+            MBox.hide();
+            swapEncoders(a, enc);
+            updateDisplayValues();
+            MBox.show(SEC4.title_swap, SEC4.msg_swapped, {
+              hideAfter: 5000,
+            });
+          },
+        }
+      );
+    });
+  });
+
   DOM.on('#btncopyencs', 'click', function () {
     copyEncoderSelection();
   });
@@ -1698,7 +1760,7 @@ function buildUI() {
             <section>
                 <div id="enc${i}" data-action="select-encoder" data-enc="${i}" class="enc typed">
                     <label class="selbox" title="Select encoder for copying"><input type="checkbox" data-selenc="${i}"/></label>
-                    <div class="knob"></div>
+                    <div class="knob" draggable="true" title="Drag onto another encoder to swap the two encoders"></div>
                     <img src="tap-svgrepo-com.svg" width="24px" class="tapicon" title="Push button mode (click to toggle)" data-action="mode-turn"/>
                     <img src="rotate-svgrepo-com.svg" width="24px" class="rotateicon" title="Turn mode (click to toggle)" data-action="mode-push"/>
                     <div class="n"><input data-watch="name" id="enc_name${i}" class="matrixfont" type="text" maxlength="4" value="EC${twodig}" tabindex="${

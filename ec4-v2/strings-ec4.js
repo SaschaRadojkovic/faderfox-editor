@@ -72,6 +72,12 @@ let SEC4 = {
   $msg_paste_encs_confirm:
     'Paste {} copied encoder(s) into the selected positions of the current group?<br/>This will overwrite existing values.',
 
+  title_swap: 'Swap encoders',
+  $msg_swap:
+    'Swap encoder #{} and encoder #{} in the current group?<br/>All settings of both encoders are exchanged.',
+  swap_btn: 'Swap',
+  msg_swapped: 'Encoders swapped.',
+
   title_fillnumbers: 'Fill from top left to bottom right',
   title_fillnumbers_bottom: 'Fill from bottom left to top right',
   $msg_fillnumbers:

@@ -354,6 +354,16 @@ main section {
   background-color: #222;
   box-shadow: 0 0 15px #777;
   border: 2px solid #000;
+  cursor: grab;
+}
+
+.enc.dragging {
+  opacity: 0.5;
+}
+
+.enc.droptarget {
+  outline: 2px solid #feff5f;
+  outline-offset: -2px;
 }
 
 .enc .n {
