@@ -72,6 +72,13 @@ class Handler(SimpleHTTPRequestHandler):
 
         super().do_GET()
 
+    def end_headers(self):
+        # Static editor files: force revalidation on every load so a
+        # normal reload always picks up changes (no heuristic caching).
+        if urlparse(self.path).path not in ("/__ec4_bridge_health", "/__midi_bridge"):
+            self.send_header("Cache-Control", "no-cache")
+        super().end_headers()
+
     def send_json(self, payload):
         body = json.dumps(payload).encode("utf-8")
         self.send_response(200)
