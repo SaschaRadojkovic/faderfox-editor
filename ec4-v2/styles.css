@@ -620,6 +620,7 @@ main section {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.67);
+  z-index: 100;
 }
 
 #merge {
@@ -634,6 +635,7 @@ main section {
   overflow: auto;
   border: 2px solid #000;
   border-radius: 4px;
+  z-index: 101;
 }
 
 #merge .content {
@@ -706,6 +708,7 @@ main section {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.67);
+  z-index: 100;
 }
 
 #pasteencs {
@@ -718,6 +721,7 @@ main section {
   box-shadow: 0 0 8px #000;
   border: 2px solid #000;
   border-radius: 4px;
+  z-index: 101;
 }
 
 #pasteencs .content {
