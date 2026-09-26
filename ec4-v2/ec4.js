@@ -45,6 +45,7 @@ const MEM = {
     groupNames: undefined,
     setupData: undefined,
   },
+  clipboardDataEncs: null,
 };
 
 const FACTORY_PRESET_PATH = 'EC4-setup-all-factory-V20.syx';
@@ -754,6 +755,10 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
           selection.group = number;
         }
+        DOM.all('#ctrlcontainer input[data-selenc]', (el) => {
+          el.checked = false;
+        });
+        DOM.removeClass('#ctrlcontainer .enc', 'encsel');
         break;
       case 'select-encoder':
         selectEncoder(e);
@@ -1403,6 +1408,166 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
   }
+  const ENCODER_PARAMS = [
+    'type',
+    'channel',
+    'number',
+    'number_h',
+    'link',
+    'lower',
+    'upper',
+    'lower_msb',
+    'upper_msb',
+    'mode',
+    'scale',
+    'name',
+    'pb_channel',
+    'pb_display',
+    'pb_type',
+    'pb_mode',
+    'pb_number',
+    'pb_link',
+    'pb_lower',
+    'pb_upper',
+  ];
+
+  function encoderParams(sel, enc) {
+    const p = {};
+    for (const key of ENCODER_PARAMS) {
+      p[key] = P.get(sel, enc, key);
+    }
+    return p;
+  }
+
+  function setEncoderParams(sel, enc, p) {
+    for (const key in p) {
+      P.set(sel, enc, key, p[key]);
+    }
+  }
+
+  function copyEncoderSelection() {
+    const encs = [];
+    DOM.all('#ctrlcontainer input[data-selenc]:checked', (el) => {
+      const enc = parseInt(el.getAttribute('data-selenc'));
+      encs.push({ enc: enc, params: encoderParams(selection, enc) });
+    });
+    if (encs.length === 0) {
+      MBox.show(SEC4.title_copypaste, SEC4.msg_no_encs_selected, {
+        hideAfter: 5000,
+      });
+      return;
+    }
+    encs.sort((a, b) => a.enc - b.enc);
+    MEM.clipboardDataEncs = encs;
+    const names = encs
+      .map((e) => `#${e.enc + 1} (${String(e.params.name).trim()})`)
+      .join(', ');
+    MBox.show(
+      SEC4.title_copypaste,
+      STR.apply(SEC4.$msg_copy_encs, names),
+      { hideAfter: 5000 }
+    );
+  }
+
+  function pasteEncoderSelection() {
+    if (!MEM.clipboardDataEncs || MEM.clipboardDataEncs.length === 0) {
+      MBox.show(SEC4.title_copypaste, SEC4.msg_clipboard_empty, {
+        hideAfter: 5000,
+      });
+      return;
+    }
+    const n = MEM.clipboardDataEncs.length;
+    const copiedNames = MEM.clipboardDataEncs
+      .map((e) => `#${e.enc + 1} (${String(e.params.name).trim()})`)
+      .join(', ');
+    let html = `<div id="dimpe"></div><div id="pasteencs"><div class="content"><p>${STR.apply(
+      SEC4.$msg_paste_encs_intro,
+      n,
+      `${selection.group + 1}`,
+      `&quot;${P.getGroupName(selection.setup, selection.group)}&quot;`,
+      copiedNames
+    )}</p></div><div class="pegid">`;
+    for (let i = 0; i < 16; i++) {
+      const encName = String(P.get(selection, i, P.name)).trim();
+      html += `<span class="pecell" data-p="0" data-enc="${i}" title="${
+        SEC4.paste_enc_tooltip
+      }">${encName}</span>`;
+    }
+    html += `</div><div class="content">
+      <button class="default" data-penc="paste">${SEC4.paste_btn_paste} <span id="pecount">0</span>/${n}</button>
+      <button data-penc="cancel">Cancel</button>
+    </div></div>`;
+    DOM.addHTML('body', 'beforeend', html);
+    function updateCount() {
+      let count = 0;
+      DOM.all('#pasteencs .pecell[data-p="1"]', () => {
+        count++;
+      });
+      DOM.element('#pecount').innerText = count;
+    }
+    DOM.on('#pasteencs .pecell', 'click', (e) => {
+      const el = e.target;
+      el.setAttribute('data-p', el.getAttribute('data-p') === '1' ? 0 : 1);
+      updateCount();
+    });
+    function closeDialog() {
+      DOM.element('#pasteencs').remove();
+      DOM.element('#dimpe').remove();
+    }
+    DOM.on('#pasteencs button', 'click', (e) => {
+      const action = e.target.getAttribute('data-penc');
+      if (action === 'cancel') {
+        closeDialog();
+        return;
+      }
+      const targets = [];
+      DOM.all('#pasteencs .pecell', (el) => {
+        if (el.getAttribute('data-p') === '1') {
+          targets.push(parseInt(el.getAttribute('data-enc')));
+        }
+      });
+      if (targets.length === 0) {
+        MBox.show(SEC4.title_copypaste, SEC4.msg_no_targets, {
+          hideAfter: 5000,
+        });
+        return;
+      }
+      const doPaste = () => {
+        targets.forEach((target, idx) => {
+          setEncoderParams(selection, target, MEM.clipboardDataEncs[idx].params);
+        });
+        closeDialog();
+        updateDisplayValues();
+        MBox.show(SEC4.title_copypaste, SEC4.msg_pasted, {
+          hideAfter: 5000,
+        });
+      };
+      MBox.show(
+        SEC4.title_copypaste,
+        STR.apply(SEC4.$msg_paste_encs_confirm, targets.length, n),
+        {
+          buttonLabel: SEC4.paste_btn_paste,
+          confirmCallback: doPaste,
+        }
+      );
+    });
+  }
+
+  DOM.all('#ctrlcontainer input[data-selenc]', (el) => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const enc = el.getAttribute('data-selenc');
+      DOM.element(`#enc${enc}`).classList.toggle('encsel', el.checked);
+    });
+  });
+
+  DOM.on('#btncopyencs', 'click', function () {
+    copyEncoderSelection();
+  });
+  DOM.on('#btnpasteencs', 'click', function () {
+    pasteEncoderSelection();
+  });
+
   DOM.on('#btncopygroup', 'click', function () {
     copyToClipboard('group');
   });
@@ -1517,6 +1682,7 @@ function buildUI() {
     const html = `
             <section>
                 <div id="enc${i}" data-action="select-encoder" data-enc="${i}" class="enc typed">
+                    <label class="selbox" title="Select encoder for copying"><input type="checkbox" data-selenc="${i}"/></label>
                     <div class="knob"></div>
                     <img src="tap-svgrepo-com.svg" width="24px" class="tapicon" title="Push button mode (click to toggle)" data-action="mode-turn"/>
                     <img src="rotate-svgrepo-com.svg" width="24px" class="rotateicon" title="Turn mode (click to toggle)" data-action="mode-push"/>
