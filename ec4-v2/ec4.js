@@ -994,19 +994,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function sysexHandler(data) {
     if (data.length > 100 /* arbitrary number */) {
-      const version = sysex.parseSysexData(
-        data,
-        (c) => {},
-        (a, p) => {}
-      );
-      if (version < 2) {
-        MBox.show(
-          SEC4.title_data_received,
-          SEC4.msg_old_firmware_data,
-          { type: 'error' }
+      try {
+        const version = sysex.parseSysexData(
+          data,
+          (c) => {},
+          (a, p) => {}
         );
-      } else {
-        if (SYSEX_BACKUP_MODE) {
+        if (version < 2) {
+          MBox.show(
+            SEC4.title_data_received,
+            SEC4.msg_old_firmware_data,
+            { type: 'error' }
+          );
+        } else if (SYSEX_BACKUP_MODE) {
           const now = new Date();
           function twoDigits(v) {
             return v < 10 ? `0${v}` : String(v);
@@ -1020,16 +1020,15 @@ document.addEventListener('DOMContentLoaded', function () {
           SYSEX_BACKUP_MODE = false;
           sendData();
         } else {
-          try {
-            loadSysexData(data);
-          } catch (e) {
-            MBox.show(
-              SEC4.title_data_received,
-              STR.apply(SEC4.$msg_invalid_data, e.message),
-              { hideAfter: 10000, type: 'error' }
-            );
-          }
+          loadSysexData(data);
         }
+      } catch (e) {
+        console.error('Failed to process received sysex data', e, data);
+        MBox.show(
+          SEC4.title_data_received,
+          STR.apply(SEC4.$msg_invalid_data, e.message),
+          { hideAfter: 10000, type: 'error' }
+        );
       }
     } else {
       console.log('Ignoring sysex data due to length', data);
