@@ -721,6 +721,11 @@ main section {
   z-index: 100;
 }
 
+#mbox,
+#mboxtemp {
+  z-index: 102;
+}
+
 #pasteencs {
   position: fixed;
   top: 10%;

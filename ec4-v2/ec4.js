@@ -1554,6 +1554,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
       const doPaste = () => {
+        MBox.hide();
         targets.forEach((target, idx) => {
           setEncoderParams(selection, target, MEM.clipboardDataEncs[idx].params);
         });
