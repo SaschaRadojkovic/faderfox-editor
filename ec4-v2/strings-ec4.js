@@ -93,6 +93,11 @@ let SEC4 = {
     'Swap group #{} (&quot;{}&quot;) and group #{} (&quot;{}&quot;) in the current setup?<br/>All settings of both groups are exchanged.',
   msg_swapped_groups: 'Groups swapped.',
 
+  title_swap_setups: 'Swap setups',
+  $msg_swap_setups:
+    'Swap setup #{} (&quot;{}&quot;) and setup #{} (&quot;{}&quot;) including all their groups?<br/>All settings of both setups are exchanged.',
+  msg_swapped_setups: 'Setups swapped.',
+
   title_fillnumbers: 'Fill from top left to bottom right',
   title_fillnumbers_bottom: 'Fill from bottom left to top right',
   $msg_fillnumbers:

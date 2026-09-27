@@ -366,6 +366,15 @@ main section {
   outline-offset: -2px;
 }
 
+#browser > li.setuprow.dragging {
+  opacity: 0.5;
+}
+
+#browser > li.setuprow.droptarget {
+  outline: 2px solid #feff5f;
+  outline-offset: -2px;
+}
+
 #browser li.grouprow.dragging {
   opacity: 0.5;
 }

@@ -1454,6 +1454,53 @@ document.addEventListener('DOMContentLoaded', function () {
     setEncoderParams(selection, b, pa);
   }
 
+  function swapSetups(a, b) {
+    const blocks = [
+      [MEM.addrPresets, MEM.lengthSetup],
+      [MEM.addrKey1, MEM.lengthSetupKey1],
+      [MEM.addrKey2, MEM.lengthSetupKey2],
+    ];
+    for (const [base, len] of blocks) {
+      const addrA = base + a * len;
+      const addrB = base + b * len;
+      for (let i = 0; i < len; i++) {
+        const tmp = MEM.data[addrA + i];
+        MEM.data[addrA + i] = MEM.data[addrB + i];
+        MEM.data[addrB + i] = tmp;
+      }
+    }
+    const namesA = MEM.addrSetupNames + a * 4;
+    const namesB = MEM.addrSetupNames + b * 4;
+    for (let i = 0; i < 4; i++) {
+      const tmp = MEM.data[namesA + i];
+      MEM.data[namesA + i] = MEM.data[namesB + i];
+      MEM.data[namesB + i] = tmp;
+    }
+    const gNamesA = MEM.addrGroupNames + a * 64;
+    const gNamesB = MEM.addrGroupNames + b * 64;
+    for (let i = 0; i < 64; i++) {
+      const tmp = MEM.data[gNamesA + i];
+      MEM.data[gNamesA + i] = MEM.data[gNamesB + i];
+      MEM.data[gNamesB + i] = tmp;
+    }
+    const elA = document.querySelector(`#s${a}`);
+    const elB = document.querySelector(`#s${b}`);
+    if (elA && elB) {
+      const tmp = elA.value;
+      elA.value = elB.value;
+      elB.value = tmp;
+    }
+    for (let g = 0; g < 16; g++) {
+      const ga = document.querySelector(`#s${a}g${g}`);
+      const gb = document.querySelector(`#s${b}g${g}`);
+      if (ga && gb) {
+        const tmp = ga.value;
+        ga.value = gb.value;
+        gb.value = tmp;
+      }
+    }
+  }
+
   function swapGroups(setup, a, b) {
     const blocks = [
       [MEM.addrPresets, MEM.lengthGroup],
@@ -1719,6 +1766,73 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
+  // Drag & drop: swap two setups (whole rows in the browser list)
+  let dragSetup = null;
+  DOM.all('#browser li.setuprow', (li) => {
+    const setup = parseInt(li.getAttribute('data-number'));
+    const nameInput = li.querySelector(':scope > input');
+    if (nameInput) {
+      nameInput.addEventListener('mousedown', () => {
+        li.setAttribute('draggable', 'false');
+      });
+      document.addEventListener('mouseup', () => {
+        li.setAttribute('draggable', 'true');
+      });
+    }
+    li.addEventListener('dragstart', (e) => {
+      dragSetup = setup;
+      e.dataTransfer.effectAllowed = 'move';
+      try {
+        e.dataTransfer.setData('text/plain', `setup:${setup}`);
+      } catch (err) {
+        // ignore (required on some browsers to enable dragging)
+      }
+      li.classList.add('dragging');
+    });
+    li.addEventListener('dragend', () => {
+      DOM.removeClass('#browser li.setuprow', 'dragging');
+      DOM.removeClass('#browser li.setuprow', 'droptarget');
+      dragSetup = null;
+    });
+    li.addEventListener('dragover', (e) => {
+      if (dragSetup === null || setup === dragSetup) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      DOM.addClass(li, 'droptarget');
+    });
+    li.addEventListener('dragleave', () => {
+      DOM.removeClass(li, 'droptarget');
+    });
+    li.addEventListener('drop', (e) => {
+      e.preventDefault();
+      DOM.removeClass(li, 'droptarget');
+      if (dragSetup === null || setup === dragSetup) return;
+      const a = dragSetup;
+      dragSetup = null;
+      MBox.show(
+        SEC4.title_swap_setups,
+        STR.apply(
+          SEC4.$msg_swap_setups,
+          `${a + 1}`,
+          `${P.getSetupName(a)}`,
+          `${setup + 1}`,
+          `${P.getSetupName(setup)}`
+        ),
+        {
+          buttonLabel: SEC4.swap_btn,
+          confirmCallback: function () {
+            MBox.hide();
+            swapSetups(a, setup);
+            updateDisplayValues();
+            MBox.show(SEC4.title_swap_setups, SEC4.msg_swapped_setups, {
+              hideAfter: 5000,
+            });
+          },
+        }
+      );
+    });
+  });
+
   // Drag & drop: swap two groups within the same setup
   let dragGroup = null;
   DOM.all('#browser li.grouprow', (li) => {
@@ -1866,8 +1980,12 @@ function buildUI() {
   setupList.setAttribute('id', 'browser');
   for (let setupNumber = 0; setupNumber < 16; setupNumber++) {
     let setupItem = document.createElement('li');
+    setupItem.classList.add('setuprow');
     setupItem.setAttribute('data-action', 'select-setup');
     setupItem.setAttribute('data-number', setupNumber);
+    setupItem.setAttribute('draggable', 'true');
+    setupItem.title =
+      'Drag onto another setup to swap the two setups';
     if (setupNumber === 0) {
       setupItem.classList.add('selected');
     }
