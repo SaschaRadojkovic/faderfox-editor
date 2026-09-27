@@ -1985,7 +1985,7 @@ function buildUI() {
     setupItem.setAttribute('data-number', setupNumber);
     setupItem.setAttribute('draggable', 'true');
     setupItem.title =
-      'Drag onto another setup to swap the two setups';
+      'Drag this row onto another setup to swap both setups, including all 16 groups, names and encoder settings';
     if (setupNumber === 0) {
       setupItem.classList.add('selected');
     }
@@ -1998,7 +1998,7 @@ function buildUI() {
       groupItem.setAttribute('data-number', groupNumber);
       groupItem.setAttribute('draggable', 'true');
       groupItem.title =
-        'Drag onto another group of this setup to swap the two groups';
+        'Drag this row onto another group of this setup to swap both groups, including name and all 16 encoders';
       if (groupNumber === 0) {
         groupItem.classList.add('selected');
       }
