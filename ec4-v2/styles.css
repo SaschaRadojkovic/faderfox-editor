@@ -300,6 +300,48 @@ main section {
   background-color: rgba(255, 255, 0, 0.3);
 }
 
+.enc.encsel {
+  background-color: rgba(80, 255, 120, 0.25);
+  border-color: #4fd06e;
+}
+
+.enc .selbox {
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  z-index: 2;
+}
+
+.enc .selbox input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  cursor: pointer;
+  border: 1px solid #6a6;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+.enc .selbox input:checked {
+  background: #4fd06e;
+  border-color: #4fd06e;
+}
+
+.enc .selbox input:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid #000;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
 .enc .knob {
   position: absolute;
   left: 50%;
@@ -578,6 +620,7 @@ main section {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.67);
+  z-index: 100;
 }
 
 #merge {
@@ -592,6 +635,7 @@ main section {
   overflow: auto;
   border: 2px solid #000;
   border-radius: 4px;
+  z-index: 101;
 }
 
 #merge .content {
@@ -654,6 +698,86 @@ main section {
 }
 
 #merge button.default {
+  font-weight: bold;
+}
+
+#dimpe {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.67);
+  z-index: 100;
+}
+
+#pasteencs {
+  position: fixed;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ccc linear-gradient(#ccc, #aaa);
+  padding: 0 10px 10px 10px;
+  box-shadow: 0 0 8px #000;
+  border: 2px solid #000;
+  border-radius: 4px;
+  z-index: 101;
+}
+
+#pasteencs .content {
+  max-width: 500px;
+  margin: 0 auto 0.5em auto;
+  color: #000;
+  padding: 0 0.75em;
+  box-sizing: border-box;
+  font-size: 0.8em;
+}
+
+.pegid {
+  font-size: 1em;
+  font-family: monospace;
+  text-align: center;
+  background: #222;
+  padding: 8px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.pegid span {
+  padding: 6px;
+  border: 1px solid #666;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #777;
+}
+
+.pegid span[data-p='1'] {
+  background: #feff5f;
+  color: #000;
+  border-color: #000;
+  font-weight: bold;
+}
+
+.pegid .pord {
+  display: inline-block;
+  margin-left: 3px;
+  padding: 0 3px;
+  font-size: 0.7em;
+  border-radius: 3px;
+  background: #000;
+  color: #feff5f;
+}
+
+.pegid span:hover {
+  outline: 2px solid #feff5f;
+}
+
+#pasteencs button {
+  margin: 0 0.75em;
+}
+
+#pasteencs button.default {
   font-weight: bold;
 }
 

@@ -61,6 +61,17 @@ let SEC4 = {
   msg_pasted: 'Pasted clipboard data.',
   msg_clipboard_empty: 'Nothing to paste... clipboard is empty. ',
 
+  msg_no_encs_selected:
+    'Please check the box of at least one encoder in the group before copying.',
+  $msg_copy_encs: 'Copied encoder(s) {} to the clipboard.',
+  $msg_paste_encs_intro:
+    'Paste the <b>{} copied encoder(s)</b> into group {} ({}).<br/><b>Copied:</b> {}<br/><br/>Click the target positions in the grid below in the order you want them pasted: the position you click <b>first</b> receives the <b>first</b> copied encoder, the position you click second receives the second one, and so on (the number shown on each position is its paste order). Click a position again to uncheck it.',
+  paste_enc_tooltip: 'Toggle as paste target position',
+  paste_btn_paste: 'Paste',
+  msg_no_targets: 'Please select at least one target position in the grid!',
+  $msg_paste_encs_confirm:
+    'Paste {} copied encoder(s) into the selected positions of the current group?<br/>This will overwrite existing values.',
+
   title_fillnumbers: 'Fill from top left to bottom right',
   title_fillnumbers_bottom: 'Fill from bottom left to top right',
   $msg_fillnumbers:
