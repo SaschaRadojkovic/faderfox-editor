@@ -1,2 +1,5 @@
 .DS_Store
 .certs/
+.ec4-bridge-venv/
+
+__pycache__/

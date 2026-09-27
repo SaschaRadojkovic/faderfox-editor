@@ -63,7 +63,17 @@ let SEC4 = {
 
   msg_no_encs_selected:
     'Please check the box of at least one encoder in the group before copying.',
-  $msg_copy_encs: 'Copied encoder(s) {} to the clipboard.',
+  $msg_copy_encs:
+    'Copied encoder(s) {} to the clipboard ({}).',
+  $msg_copy_encs_intro:
+    'Copy <b>{} encoder(s)</b> ({}):<br/>Select which parts of the encoders should be copied:',
+  copy_enc_rotary: 'Encoder (knob) settings — type, channel, number, values, link, mode, display, name',
+  copy_enc_push: 'Push button settings — type, channel, number, mode, values, link',
+  copy_btn: 'Copy',
+  msg_no_copy_parts:
+    'Select at least one part to copy (knob settings and/or push button settings)!',
+  copy_parts_rotary: 'knob settings',
+  copy_parts_push: 'push button settings',
   $msg_paste_encs_intro:
     'Paste the <b>{} copied encoder(s)</b> into group {} ({}).<br/><b>Copied:</b> {}<br/><br/>Click the target positions in the grid below in the order you want them pasted: the position you click <b>first</b> receives the <b>first</b> copied encoder, the position you click second receives the second one, and so on (the number shown on each position is its paste order). Click a position again to uncheck it.',
   paste_enc_tooltip: 'Toggle as paste target position',
@@ -71,6 +81,22 @@ let SEC4 = {
   msg_no_targets: 'Please select at least one target position in the grid!',
   $msg_paste_encs_confirm:
     'Paste {} copied encoder(s) into the selected positions of the current group?<br/>This will overwrite existing values.',
+
+  title_swap: 'Swap encoders',
+  $msg_swap:
+    'Swap encoder #{} and encoder #{} in the current group?<br/>All settings of both encoders are exchanged.',
+  swap_btn: 'Swap',
+  msg_swapped: 'Encoders swapped.',
+
+  title_swap_groups: 'Swap groups',
+  $msg_swap_groups:
+    'Swap group #{} (&quot;{}&quot;) and group #{} (&quot;{}&quot;) in the current setup?<br/>All settings of both groups are exchanged.',
+  msg_swapped_groups: 'Groups swapped.',
+
+  title_swap_setups: 'Swap setups',
+  $msg_swap_setups:
+    'Swap setup #{} (&quot;{}&quot;) and setup #{} (&quot;{}&quot;) including all their groups?<br/>All settings of both setups are exchanged.',
+  msg_swapped_setups: 'Setups swapped.',
 
   title_fillnumbers: 'Fill from top left to bottom right',
   title_fillnumbers_bottom: 'Fill from bottom left to top right',

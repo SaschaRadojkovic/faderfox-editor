@@ -994,19 +994,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function sysexHandler(data) {
     if (data.length > 100 /* arbitrary number */) {
-      const version = sysex.parseSysexData(
-        data,
-        (c) => {},
-        (a, p) => {}
-      );
-      if (version < 2) {
-        MBox.show(
-          SEC4.title_data_received,
-          SEC4.msg_old_firmware_data,
-          { type: 'error' }
+      try {
+        const version = sysex.parseSysexData(
+          data,
+          (c) => {},
+          (a, p) => {}
         );
-      } else {
-        if (SYSEX_BACKUP_MODE) {
+        if (version < 2) {
+          MBox.show(
+            SEC4.title_data_received,
+            SEC4.msg_old_firmware_data,
+            { type: 'error' }
+          );
+        } else if (SYSEX_BACKUP_MODE) {
           const now = new Date();
           function twoDigits(v) {
             return v < 10 ? `0${v}` : String(v);
@@ -1020,16 +1020,15 @@ document.addEventListener('DOMContentLoaded', function () {
           SYSEX_BACKUP_MODE = false;
           sendData();
         } else {
-          try {
-            loadSysexData(data);
-          } catch (e) {
-            MBox.show(
-              SEC4.title_data_received,
-              STR.apply(SEC4.$msg_invalid_data, e.message),
-              { hideAfter: 10000, type: 'error' }
-            );
-          }
+          loadSysexData(data);
         }
+      } catch (e) {
+        console.error('Failed to process received sysex data', e, data);
+        MBox.show(
+          SEC4.title_data_received,
+          STR.apply(SEC4.$msg_invalid_data, e.message),
+          { hideAfter: 10000, type: 'error' }
+        );
       }
     } else {
       console.log('Ignoring sysex data due to length', data);
@@ -1408,7 +1407,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
   }
-  const ENCODER_PARAMS = [
+  const ENCODER_ROTARY_PARAMS = [
     'type',
     'channel',
     'number',
@@ -1421,6 +1420,8 @@ document.addEventListener('DOMContentLoaded', function () {
     'mode',
     'scale',
     'name',
+  ];
+  const PUSH_BUTTON_PARAMS = [
     'pb_channel',
     'pb_display',
     'pb_type',
@@ -1430,10 +1431,11 @@ document.addEventListener('DOMContentLoaded', function () {
     'pb_lower',
     'pb_upper',
   ];
+  const ENCODER_PARAMS = [...ENCODER_ROTARY_PARAMS, ...PUSH_BUTTON_PARAMS];
 
-  function encoderParams(sel, enc) {
+  function encoderParams(sel, enc, keys) {
     const p = {};
-    for (const key of ENCODER_PARAMS) {
+    for (const key of keys || ENCODER_PARAMS) {
       p[key] = P.get(sel, enc, key);
     }
     return p;
@@ -1445,11 +1447,95 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+  function swapEncoders(a, b) {
+    const pa = encoderParams(selection, a);
+    const pb = encoderParams(selection, b);
+    setEncoderParams(selection, a, pb);
+    setEncoderParams(selection, b, pa);
+  }
+
+  function swapSetups(a, b) {
+    const blocks = [
+      [MEM.addrPresets, MEM.lengthSetup],
+      [MEM.addrKey1, MEM.lengthSetupKey1],
+      [MEM.addrKey2, MEM.lengthSetupKey2],
+    ];
+    for (const [base, len] of blocks) {
+      const addrA = base + a * len;
+      const addrB = base + b * len;
+      for (let i = 0; i < len; i++) {
+        const tmp = MEM.data[addrA + i];
+        MEM.data[addrA + i] = MEM.data[addrB + i];
+        MEM.data[addrB + i] = tmp;
+      }
+    }
+    const namesA = MEM.addrSetupNames + a * 4;
+    const namesB = MEM.addrSetupNames + b * 4;
+    for (let i = 0; i < 4; i++) {
+      const tmp = MEM.data[namesA + i];
+      MEM.data[namesA + i] = MEM.data[namesB + i];
+      MEM.data[namesB + i] = tmp;
+    }
+    const gNamesA = MEM.addrGroupNames + a * 64;
+    const gNamesB = MEM.addrGroupNames + b * 64;
+    for (let i = 0; i < 64; i++) {
+      const tmp = MEM.data[gNamesA + i];
+      MEM.data[gNamesA + i] = MEM.data[gNamesB + i];
+      MEM.data[gNamesB + i] = tmp;
+    }
+    const elA = document.querySelector(`#s${a}`);
+    const elB = document.querySelector(`#s${b}`);
+    if (elA && elB) {
+      const tmp = elA.value;
+      elA.value = elB.value;
+      elB.value = tmp;
+    }
+    for (let g = 0; g < 16; g++) {
+      const ga = document.querySelector(`#s${a}g${g}`);
+      const gb = document.querySelector(`#s${b}g${g}`);
+      if (ga && gb) {
+        const tmp = ga.value;
+        ga.value = gb.value;
+        gb.value = tmp;
+      }
+    }
+  }
+
+  function swapGroups(setup, a, b) {
+    const blocks = [
+      [MEM.addrPresets, MEM.lengthGroup],
+      [MEM.addrKey1, MEM.lengthGroupKey1],
+      [MEM.addrKey2, MEM.lengthGroupKey2],
+    ];
+    for (const [base, len] of blocks) {
+      const addrA = base + (setup * 16 + a) * len;
+      const addrB = base + (setup * 16 + b) * len;
+      for (let i = 0; i < len; i++) {
+        const tmp = MEM.data[addrA + i];
+        MEM.data[addrA + i] = MEM.data[addrB + i];
+        MEM.data[addrB + i] = tmp;
+      }
+    }
+    const nameA = MEM.addrGroupNames + setup * 64 + a * 4;
+    const nameB = MEM.addrGroupNames + setup * 64 + b * 4;
+    for (let i = 0; i < 4; i++) {
+      const tmp = MEM.data[nameA + i];
+      MEM.data[nameA + i] = MEM.data[nameB + i];
+      MEM.data[nameB + i] = tmp;
+    }
+    const elA = document.querySelector(`#s${setup}g${a}`);
+    const elB = document.querySelector(`#s${setup}g${b}`);
+    if (elA && elB) {
+      const tmp = elA.value;
+      elA.value = elB.value;
+      elB.value = tmp;
+    }
+  }
+
   function copyEncoderSelection() {
     const encs = [];
     DOM.all('#ctrlcontainer input[data-selenc]:checked', (el) => {
-      const enc = parseInt(el.getAttribute('data-selenc'));
-      encs.push({ enc: enc, params: encoderParams(selection, enc) });
+      encs.push(parseInt(el.getAttribute('data-selenc')));
     });
     if (encs.length === 0) {
       MBox.show(SEC4.title_copypaste, SEC4.msg_no_encs_selected, {
@@ -1457,16 +1543,61 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       return;
     }
-    encs.sort((a, b) => a.enc - b.enc);
-    MEM.clipboardDataEncs = encs;
+    encs.sort((a, b) => a - b);
     const names = encs
-      .map((e) => `#${e.enc + 1} (${String(e.params.name).trim()})`)
+      .map(
+        (enc) =>
+          `#${enc + 1} (${String(P.get(selection, enc, P.name)).trim()})`
+      )
       .join(', ');
-    MBox.show(
-      SEC4.title_copypaste,
-      STR.apply(SEC4.$msg_copy_encs, names),
-      { hideAfter: 5000 }
-    );
+    const html = `<div id="dimco"></div><div id="copyencs"><div class="content"><p>${STR.apply(
+      SEC4.$msg_copy_encs_intro,
+      encs.length,
+      names
+    )}</p><label class="coopt"><input type="checkbox" data-cpart="rotary" checked/>${
+      SEC4.copy_enc_rotary
+    }</label><label class="coopt"><input type="checkbox" data-cpart="push" checked/>${
+      SEC4.copy_enc_push
+    }</label></div><div class="content"><button class="default" data-cenc="copy">${
+      SEC4.copy_btn
+    }</button><button data-cenc="cancel">Cancel</button></div></div>`;
+    DOM.addHTML('body', 'beforeend', html);
+    function closeDialog() {
+      DOM.element('#copyencs').remove();
+      DOM.element('#dimco').remove();
+    }
+    DOM.on('#copyencs button[data-cenc="cancel"]', 'click', closeDialog);
+    DOM.on('#copyencs button[data-cenc="copy"]', 'click', () => {
+      const parts = [];
+      DOM.all('#copyencs input[data-cpart]:checked', (el) => {
+        parts.push(el.getAttribute('data-cpart'));
+      });
+      if (parts.length === 0) {
+        MBox.show(SEC4.title_copypaste, SEC4.msg_no_copy_parts, {
+          hideAfter: 5000,
+        });
+        return;
+      }
+      const keys = ENCODER_PARAMS.filter((k) =>
+        parts.includes(PUSH_BUTTON_PARAMS.includes(k) ? 'push' : 'rotary')
+      );
+      closeDialog();
+      MEM.clipboardDataEncs = encs.map((enc) => ({
+        enc: enc,
+        name: String(P.get(selection, enc, P.name)).trim(),
+        params: encoderParams(selection, enc, keys),
+      }));
+      const partLabel = parts
+        .map((p) =>
+          p === 'rotary' ? SEC4.copy_parts_rotary : SEC4.copy_parts_push
+        )
+        .join(' + ');
+      MBox.show(
+        SEC4.title_copypaste,
+        STR.apply(SEC4.$msg_copy_encs, names, partLabel),
+        { hideAfter: 5000 }
+      );
+    });
   }
 
   function pasteEncoderSelection() {
@@ -1478,7 +1609,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     const n = MEM.clipboardDataEncs.length;
     const copiedNames = MEM.clipboardDataEncs
-      .map((e) => `#${e.enc + 1} (${String(e.params.name).trim()})`)
+      .map(
+        (e) =>
+          `#${e.enc + 1} (${String(e.name || (e.params && e.params.name) || '').trim()})`
+      )
       .join(', ');
     let html = `<div id="dimpe"></div><div id="pasteencs"><div class="content"><p>${STR.apply(
       SEC4.$msg_paste_encs_intro,
@@ -1548,6 +1682,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
       const doPaste = () => {
+        MBox.hide();
         targets.forEach((target, idx) => {
           setEncoderParams(selection, target, MEM.clipboardDataEncs[idx].params);
         });
@@ -1573,6 +1708,200 @@ document.addEventListener('DOMContentLoaded', function () {
       e.stopPropagation();
       const enc = el.getAttribute('data-selenc');
       DOM.element(`#enc${enc}`).classList.toggle('encsel', el.checked);
+    });
+  });
+
+  // Drag & drop: swap two encoders within the current group
+  let dragEnc = null;
+  DOM.all('#ctrlcontainer .enc .knob', (knob) => {
+    knob.addEventListener('dragstart', (e) => {
+      const encEl = knob.closest('.enc');
+      dragEnc = parseInt(encEl.getAttribute('data-enc'));
+      e.dataTransfer.effectAllowed = 'move';
+      try {
+        e.dataTransfer.setData('text/plain', String(dragEnc));
+      } catch (err) {
+        // ignore (required on some browsers to enable dragging)
+      }
+      encEl.classList.add('dragging');
+    });
+    knob.addEventListener('dragend', (e) => {
+      DOM.removeClass('#ctrlcontainer .enc', 'dragging');
+      DOM.removeClass('#ctrlcontainer .enc', 'droptarget');
+      dragEnc = null;
+    });
+  });
+  DOM.all('#ctrlcontainer .enc', (encEl) => {
+    const enc = parseInt(encEl.getAttribute('data-enc'));
+    encEl.addEventListener('dragover', (e) => {
+      if (dragEnc === null || enc === dragEnc) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      DOM.addClass(encEl, 'droptarget');
+    });
+    encEl.addEventListener('dragleave', () => {
+      DOM.removeClass(encEl, 'droptarget');
+    });
+    encEl.addEventListener('drop', (e) => {
+      e.preventDefault();
+      DOM.removeClass(encEl, 'droptarget');
+      if (dragEnc === null || enc === dragEnc) return;
+      const a = dragEnc;
+      dragEnc = null;
+      MBox.show(
+        SEC4.title_swap,
+        STR.apply(SEC4.$msg_swap, `${a + 1}`, `${enc + 1}`),
+        {
+          buttonLabel: SEC4.swap_btn,
+          confirmCallback: function () {
+            MBox.hide();
+            swapEncoders(a, enc);
+            updateDisplayValues();
+            MBox.show(SEC4.title_swap, SEC4.msg_swapped, {
+              hideAfter: 5000,
+            });
+          },
+        }
+      );
+    });
+  });
+
+  // Drag & drop: swap two setups (whole rows in the browser list)
+  let dragSetup = null;
+  DOM.all('#browser li.setuprow', (li) => {
+    const setup = parseInt(li.getAttribute('data-number'));
+    const nameInput = li.querySelector(':scope > input');
+    if (nameInput) {
+      nameInput.addEventListener('mousedown', () => {
+        li.setAttribute('draggable', 'false');
+      });
+      document.addEventListener('mouseup', () => {
+        li.setAttribute('draggable', 'true');
+      });
+    }
+    li.addEventListener('dragstart', (e) => {
+      dragSetup = setup;
+      e.dataTransfer.effectAllowed = 'move';
+      try {
+        e.dataTransfer.setData('text/plain', `setup:${setup}`);
+      } catch (err) {
+        // ignore (required on some browsers to enable dragging)
+      }
+      li.classList.add('dragging');
+    });
+    li.addEventListener('dragend', () => {
+      DOM.removeClass('#browser li.setuprow', 'dragging');
+      DOM.removeClass('#browser li.setuprow', 'droptarget');
+      dragSetup = null;
+    });
+    li.addEventListener('dragover', (e) => {
+      if (dragSetup === null || setup === dragSetup) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      DOM.addClass(li, 'droptarget');
+    });
+    li.addEventListener('dragleave', () => {
+      DOM.removeClass(li, 'droptarget');
+    });
+    li.addEventListener('drop', (e) => {
+      e.preventDefault();
+      DOM.removeClass(li, 'droptarget');
+      if (dragSetup === null || setup === dragSetup) return;
+      const a = dragSetup;
+      dragSetup = null;
+      MBox.show(
+        SEC4.title_swap_setups,
+        STR.apply(
+          SEC4.$msg_swap_setups,
+          `${a + 1}`,
+          `${P.getSetupName(a)}`,
+          `${setup + 1}`,
+          `${P.getSetupName(setup)}`
+        ),
+        {
+          buttonLabel: SEC4.swap_btn,
+          confirmCallback: function () {
+            MBox.hide();
+            swapSetups(a, setup);
+            updateDisplayValues();
+            MBox.show(SEC4.title_swap_setups, SEC4.msg_swapped_setups, {
+              hideAfter: 5000,
+            });
+          },
+        }
+      );
+    });
+  });
+
+  // Drag & drop: swap two groups within the same setup
+  let dragGroup = null;
+  DOM.all('#browser li.grouprow', (li) => {
+    const setup = parseInt(
+      li.parentElement.parentElement.getAttribute('data-number')
+    );
+    const group = parseInt(li.getAttribute('data-number'));
+    // keep text selection in the name input working: disable dragging
+    // while the mouse is pressed inside the input
+    const nameInput = li.querySelector('input');
+    nameInput.addEventListener('mousedown', () => {
+      li.setAttribute('draggable', 'false');
+    });
+    document.addEventListener('mouseup', () => {
+      li.setAttribute('draggable', 'true');
+    });
+    li.addEventListener('dragstart', (e) => {
+      dragGroup = { setup, group };
+      e.dataTransfer.effectAllowed = 'move';
+      try {
+        e.dataTransfer.setData('text/plain', `${setup}:${group}`);
+      } catch (err) {
+        // ignore (required on some browsers to enable dragging)
+      }
+      li.classList.add('dragging');
+    });
+    li.addEventListener('dragend', () => {
+      DOM.removeClass('#browser li.grouprow', 'dragging');
+      DOM.removeClass('#browser li.grouprow', 'droptarget');
+      dragGroup = null;
+    });
+    li.addEventListener('dragover', (e) => {
+      if (!dragGroup || dragGroup.setup !== setup || dragGroup.group === group)
+        return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      DOM.addClass(li, 'droptarget');
+    });
+    li.addEventListener('dragleave', () => {
+      DOM.removeClass(li, 'droptarget');
+    });
+    li.addEventListener('drop', (e) => {
+      e.preventDefault();
+      DOM.removeClass(li, 'droptarget');
+      if (!dragGroup || dragGroup.setup !== setup || dragGroup.group === group)
+        return;
+      const a = dragGroup.group;
+      dragGroup = null;
+      MBox.show(
+        SEC4.title_swap_groups,
+        STR.apply(
+          SEC4.$msg_swap_groups,
+          `${a + 1}`,
+          `${P.getGroupName(setup, a)}`,
+          `${group + 1}`,
+          `${P.getGroupName(setup, group)}`
+        ),
+        {
+          buttonLabel: SEC4.swap_btn,
+          confirmCallback: function () {
+            MBox.hide();
+            swapGroups(setup, a, group);
+            updateDisplayValues();
+            MBox.show(SEC4.title_swap_groups, SEC4.msg_swapped_groups, {
+              hideAfter: 5000,
+            });
+          },
+        }
+      );
     });
   });
 
@@ -1651,8 +1980,12 @@ function buildUI() {
   setupList.setAttribute('id', 'browser');
   for (let setupNumber = 0; setupNumber < 16; setupNumber++) {
     let setupItem = document.createElement('li');
+    setupItem.classList.add('setuprow');
     setupItem.setAttribute('data-action', 'select-setup');
     setupItem.setAttribute('data-number', setupNumber);
+    setupItem.setAttribute('draggable', 'true');
+    setupItem.title =
+      'Drag onto another setup to swap the two setups';
     if (setupNumber === 0) {
       setupItem.classList.add('selected');
     }
@@ -1660,8 +1993,12 @@ function buildUI() {
     groupList.className = 'group';
     for (let groupNumber = 0; groupNumber < 16; groupNumber++) {
       let groupItem = document.createElement('li');
+      groupItem.classList.add('grouprow');
       groupItem.setAttribute('data-action', 'select-group');
       groupItem.setAttribute('data-number', groupNumber);
+      groupItem.setAttribute('draggable', 'true');
+      groupItem.title =
+        'Drag onto another group of this setup to swap the two groups';
       if (groupNumber === 0) {
         groupItem.classList.add('selected');
       }
@@ -1698,7 +2035,7 @@ function buildUI() {
             <section>
                 <div id="enc${i}" data-action="select-encoder" data-enc="${i}" class="enc typed">
                     <label class="selbox" title="Select encoder for copying"><input type="checkbox" data-selenc="${i}"/></label>
-                    <div class="knob"></div>
+                    <div class="knob" draggable="true" title="Drag onto another encoder to swap the two encoders"></div>
                     <img src="tap-svgrepo-com.svg" width="24px" class="tapicon" title="Push button mode (click to toggle)" data-action="mode-turn"/>
                     <img src="rotate-svgrepo-com.svg" width="24px" class="rotateicon" title="Turn mode (click to toggle)" data-action="mode-push"/>
                     <div class="n"><input data-watch="name" id="enc_name${i}" class="matrixfont" type="text" maxlength="4" value="EC${twodig}" tabindex="${
