@@ -88,6 +88,11 @@ let SEC4 = {
   swap_btn: 'Swap',
   msg_swapped: 'Encoders swapped.',
 
+  title_swap_groups: 'Swap groups',
+  $msg_swap_groups:
+    'Swap group #{} (&quot;{}&quot;) and group #{} (&quot;{}&quot;) in the current setup?<br/>All settings of both groups are exchanged.',
+  msg_swapped_groups: 'Groups swapped.',
+
   title_fillnumbers: 'Fill from top left to bottom right',
   title_fillnumbers_bottom: 'Fill from bottom left to top right',
   $msg_fillnumbers:

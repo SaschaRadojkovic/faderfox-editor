@@ -1454,6 +1454,37 @@ document.addEventListener('DOMContentLoaded', function () {
     setEncoderParams(selection, b, pa);
   }
 
+  function swapGroups(setup, a, b) {
+    const blocks = [
+      [MEM.addrPresets, MEM.lengthGroup],
+      [MEM.addrKey1, MEM.lengthGroupKey1],
+      [MEM.addrKey2, MEM.lengthGroupKey2],
+    ];
+    for (const [base, len] of blocks) {
+      const addrA = base + (setup * 16 + a) * len;
+      const addrB = base + (setup * 16 + b) * len;
+      for (let i = 0; i < len; i++) {
+        const tmp = MEM.data[addrA + i];
+        MEM.data[addrA + i] = MEM.data[addrB + i];
+        MEM.data[addrB + i] = tmp;
+      }
+    }
+    const nameA = MEM.addrGroupNames + setup * 64 + a * 4;
+    const nameB = MEM.addrGroupNames + setup * 64 + b * 4;
+    for (let i = 0; i < 4; i++) {
+      const tmp = MEM.data[nameA + i];
+      MEM.data[nameA + i] = MEM.data[nameB + i];
+      MEM.data[nameB + i] = tmp;
+    }
+    const elA = document.querySelector(`#s${setup}g${a}`);
+    const elB = document.querySelector(`#s${setup}g${b}`);
+    if (elA && elB) {
+      const tmp = elA.value;
+      elA.value = elB.value;
+      elB.value = tmp;
+    }
+  }
+
   function copyEncoderSelection() {
     const encs = [];
     DOM.all('#ctrlcontainer input[data-selenc]:checked', (el) => {
@@ -1688,6 +1719,70 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
+  // Drag & drop: swap two groups within the same setup
+  let dragGroup = null;
+  DOM.all('#browser li.grouprow', (li) => {
+    const setup = parseInt(
+      li.parentElement.parentElement.getAttribute('data-number')
+    );
+    const group = parseInt(li.getAttribute('data-number'));
+    const handle = li.querySelector('.groupdrag');
+    handle.addEventListener('dragstart', (e) => {
+      dragGroup = { setup, group };
+      e.dataTransfer.effectAllowed = 'move';
+      try {
+        e.dataTransfer.setData('text/plain', `${setup}:${group}`);
+      } catch (err) {
+        // ignore (required on some browsers to enable dragging)
+      }
+      li.classList.add('dragging');
+    });
+    handle.addEventListener('dragend', () => {
+      DOM.removeClass('#browser li.grouprow', 'dragging');
+      DOM.removeClass('#browser li.grouprow', 'droptarget');
+      dragGroup = null;
+    });
+    li.addEventListener('dragover', (e) => {
+      if (!dragGroup || dragGroup.setup !== setup || dragGroup.group === group)
+        return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      DOM.addClass(li, 'droptarget');
+    });
+    li.addEventListener('dragleave', () => {
+      DOM.removeClass(li, 'droptarget');
+    });
+    li.addEventListener('drop', (e) => {
+      e.preventDefault();
+      DOM.removeClass(li, 'droptarget');
+      if (!dragGroup || dragGroup.setup !== setup || dragGroup.group === group)
+        return;
+      const a = dragGroup.group;
+      dragGroup = null;
+      MBox.show(
+        SEC4.title_swap_groups,
+        STR.apply(
+          SEC4.$msg_swap_groups,
+          `${a + 1}`,
+          `${P.getGroupName(setup, a)}`,
+          `${group + 1}`,
+          `${P.getGroupName(setup, group)}`
+        ),
+        {
+          buttonLabel: SEC4.swap_btn,
+          confirmCallback: function () {
+            MBox.hide();
+            swapGroups(setup, a, group);
+            updateDisplayValues();
+            MBox.show(SEC4.title_swap_groups, SEC4.msg_swapped_groups, {
+              hideAfter: 5000,
+            });
+          },
+        }
+      );
+    });
+  });
+
   DOM.on('#btncopyencs', 'click', function () {
     copyEncoderSelection();
   });
@@ -1772,8 +1867,16 @@ function buildUI() {
     groupList.className = 'group';
     for (let groupNumber = 0; groupNumber < 16; groupNumber++) {
       let groupItem = document.createElement('li');
+      groupItem.classList.add('grouprow');
       groupItem.setAttribute('data-action', 'select-group');
       groupItem.setAttribute('data-number', groupNumber);
+      const dragHandle = document.createElement('span');
+      dragHandle.className = 'groupdrag';
+      dragHandle.setAttribute('draggable', 'true');
+      dragHandle.textContent = '⠿';
+      dragHandle.title =
+        'Drag onto another group of this setup to swap the two groups';
+      groupItem.appendChild(dragHandle);
       if (groupNumber === 0) {
         groupItem.classList.add('selected');
       }

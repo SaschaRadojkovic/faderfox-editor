@@ -366,6 +366,22 @@ main section {
   outline-offset: -2px;
 }
 
+#browser li.grouprow .groupdrag {
+  cursor: grab;
+  margin-right: 4px;
+  opacity: 0.7;
+  user-select: none;
+}
+
+#browser li.grouprow.dragging {
+  opacity: 0.5;
+}
+
+#browser li.grouprow.droptarget {
+  outline: 2px solid #feff5f;
+  outline-offset: -2px;
+}
+
 .enc .n {
   position: absolute;
   right: 0;
