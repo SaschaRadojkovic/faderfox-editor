@@ -1726,8 +1726,16 @@ document.addEventListener('DOMContentLoaded', function () {
       li.parentElement.parentElement.getAttribute('data-number')
     );
     const group = parseInt(li.getAttribute('data-number'));
-    const handle = li.querySelector('.groupdrag');
-    handle.addEventListener('dragstart', (e) => {
+    // keep text selection in the name input working: disable dragging
+    // while the mouse is pressed inside the input
+    const nameInput = li.querySelector('input');
+    nameInput.addEventListener('mousedown', () => {
+      li.setAttribute('draggable', 'false');
+    });
+    document.addEventListener('mouseup', () => {
+      li.setAttribute('draggable', 'true');
+    });
+    li.addEventListener('dragstart', (e) => {
       dragGroup = { setup, group };
       e.dataTransfer.effectAllowed = 'move';
       try {
@@ -1737,7 +1745,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
       li.classList.add('dragging');
     });
-    handle.addEventListener('dragend', () => {
+    li.addEventListener('dragend', () => {
       DOM.removeClass('#browser li.grouprow', 'dragging');
       DOM.removeClass('#browser li.grouprow', 'droptarget');
       dragGroup = null;
@@ -1870,13 +1878,9 @@ function buildUI() {
       groupItem.classList.add('grouprow');
       groupItem.setAttribute('data-action', 'select-group');
       groupItem.setAttribute('data-number', groupNumber);
-      const dragHandle = document.createElement('span');
-      dragHandle.className = 'groupdrag';
-      dragHandle.setAttribute('draggable', 'true');
-      dragHandle.textContent = '⠿';
-      dragHandle.title =
+      groupItem.setAttribute('draggable', 'true');
+      groupItem.title =
         'Drag onto another group of this setup to swap the two groups';
-      groupItem.appendChild(dragHandle);
       if (groupNumber === 0) {
         groupItem.classList.add('selected');
       }
