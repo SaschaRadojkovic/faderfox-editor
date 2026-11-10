@@ -308,7 +308,7 @@ main section {
 .enc .selbox {
   position: absolute;
   left: 4px;
-  top: 4px;
+  bottom: 4px;
   z-index: 2;
 }
 
