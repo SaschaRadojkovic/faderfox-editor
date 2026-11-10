@@ -19,6 +19,8 @@ Editor for the [EC4 Encoder Controller](http://www.faderfox.de/ec4.html). You ca
 
 ## Local EC4 editor on macOS
 
+Get this repository with `git clone` (a browser ZIP download adds a macOS quarantine flag that blocks the launch script; if that happens, remove the flag once with `xattr -d com.apple.quarantine "Start EC4 Editor.command"` in Terminal).
+
 Connect the EC4 via USB and double-click **`Start EC4 Editor.command`**. The first start installs the local CoreMIDI bridge automatically. Keep the opened Terminal window running while using the editor; close it or press `Ctrl+C` to stop it. If a bridge is already running on port 8321, the script just opens Chrome at `http://localhost:8321/ec4-v2/`. Without a connected device the editor still starts in offline mode, so you can edit and save files.
 
 ### New features of this fork
