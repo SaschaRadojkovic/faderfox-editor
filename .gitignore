@@ -8,3 +8,6 @@ __pycache__/
 *.py[cod]
 HANDOFF.md
 /docs/
+
+.pi/
+.pi-subagents/
