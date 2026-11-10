@@ -312,6 +312,11 @@ main section {
   z-index: 2;
 }
 
+/* leftmost encoder column: the 4px offset sits on the device bezel line */
+#ctrlcontainer section:nth-child(4n + 1) .enc .selbox {
+  left: 12px;
+}
+
 .enc .selbox input {
   -webkit-appearance: none;
   appearance: none;
