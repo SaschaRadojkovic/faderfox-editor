@@ -7,6 +7,10 @@ This project offers browser-based editors for MIDI controllers by [faderfox.de](
 > and includes a native CoreMIDI bridge, so the editor can be run locally on macOS with a
 > double-click — no web server or deployment required.
 
+![EC4 editor showing setups, groups and encoder settings](screenshots/editor-overview.png)
+
+**What's new here:** copy/paste encoders, groups and whole setups — and drag & drop to swap them.
+
 To use this editor you need a Web-MIDI-enabled webbrowser. Currently only Google Chrome (since Version 49 with sysex-support) and [Chromium](https://www.chromium.org/Home) support Web-MIDI.
 
 ## EC4 Editor
@@ -29,6 +33,8 @@ These features are additions to the original editor and only apply to the EC4 (F
 
 All swaps ask for confirmation before changing anything. After editing, use **Send to EC4** to transfer the changes to the device. The toolbar buttons show short hints when you hover over them.
 
+![Copy/paste toolbar: Copy Setup, Copy Group, Copy Encoders and their paste counterparts](screenshots/copy-paste-toolbar.png)
+
 ## PC4 editor
 
 Editor for the [PC4 Pot Controller](http://faderfox.de/pc4.html). You can find a ready-to-use version under [https://www.privatepublic.de/faderfox-editor/pc4](https://www.privatepublic.de/faderfox-editor/pc4).
@@ -37,5 +43,7 @@ Editor for the [PC4 Pot Controller](http://faderfox.de/pc4.html). You can find a
 This software was developed in co-operation with faderfox.
 
 ## License
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.txt)
 
 MIT — see [LICENSE.txt](LICENSE.txt). Original editor © 2017 Peter Witzel; fork additions © 2026 Sascha Radojkovic.
