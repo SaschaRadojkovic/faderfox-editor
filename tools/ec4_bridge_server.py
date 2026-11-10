@@ -36,7 +36,7 @@ def midi_callback(event, _data=None):
                     latest_dump = bytes(sysex_buffer)
                     generation += 1
                     print(
-                        f"EC4 SysEx vollständig empfangen: {len(latest_dump)} Bytes",
+                        f"EC4 SysEx dump received in full: {len(latest_dump)} bytes",
                         flush=True,
                     )
                     sysex_buffer = bytearray()
@@ -108,8 +108,8 @@ def main():
         None,
     )
     if port_index is None:
-        print("FEHLER: Faderfox EC4 wurde nicht als MIDI-Eingang gefunden.")
-        print("Gefundene MIDI-Eingänge:", ports or "keine")
+        print("ERROR: Faderfox EC4 not found as a MIDI input.")
+        print("Available MIDI inputs:", ports or "none")
         return 1
 
     midi_in.open_port(port_index, "EC4 Local Bridge")
@@ -118,20 +118,20 @@ def main():
     try:
         server = Server((HOST, PORT), Handler)
     except OSError as error:
-        print(f"FEHLER: Port {PORT} kann nicht geöffnet werden: {error}")
+        print(f"ERROR: Could not open port {PORT}: {error}")
         return 1
 
-    print(f"EC4 gefunden: {ports[port_index]}", flush=True)
+    print(f"EC4 found: {ports[port_index]}", flush=True)
     print(
-        f"Editor läuft auf http://localhost:{PORT}/ec4-v2/index.html",
+        f"Editor available at http://localhost:{PORT}/ec4-v2/index.html",
         flush=True,
     )
-    print("Dieses Fenster während der Benutzung geöffnet lassen.", flush=True)
+    print("Keep this window open while using the editor.", flush=True)
 
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        print("\nEC4 Editor wird beendet.")
+        print("\nShutting down EC4 Editor.")
     finally:
         midi_in.cancel_callback()
         midi_in.close_port()
