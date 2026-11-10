@@ -8,17 +8,17 @@ cd "$ROOT" || exit 1
 
 pause_on_error() {
   echo
-  read -r -p "Zum Schließen Enter drücken …"
+  read -r -p "Press Enter to close …"
 }
 
 if curl -fsS "http://127.0.0.1:8321/__ec4_bridge_health" >/dev/null 2>&1; then
-  echo "Der EC4 Editor läuft bereits. Chrome wird geöffnet."
+  echo "The EC4 Editor is already running. Opening Chrome."
   open -a "Google Chrome" "$URL"
   exit 0
 fi
 
 if lsof -ti tcp:8321 >/dev/null 2>&1; then
-  echo "FEHLER: Port 8321 wird bereits von einem anderen Programm verwendet."
+  echo "ERROR: Port 8321 is already in use by another program."
   pause_on_error
   exit 1
 fi
@@ -40,24 +40,24 @@ do
 done
 
 if [ -z "$PYTHON" ]; then
-  echo "FEHLER: Python 3 wurde nicht gefunden."
+  echo "ERROR: Python 3 was not found."
   pause_on_error
   exit 1
 fi
 
 if [ ! -x "$VENV/bin/python" ]; then
-  echo "Einmalige Einrichtung der lokalen MIDI-Brücke …"
+  echo "Setting up the local MIDI bridge for the first time …"
   "$PYTHON" -m venv "$VENV" || {
-    echo "FEHLER: Python-Umgebung konnte nicht erstellt werden."
+    echo "ERROR: Could not create the Python environment."
     pause_on_error
     exit 1
   }
 fi
 
 if ! "$VENV/bin/python" -c "import rtmidi" >/dev/null 2>&1; then
-  echo "Installiere einmalig die MIDI-Komponente …"
+  echo "Installing the MIDI component (one-time) …"
   "$VENV/bin/python" -m pip install -r "$ROOT/tools/requirements.txt" || {
-    echo "FEHLER: MIDI-Komponente konnte nicht installiert werden."
+    echo "ERROR: Could not install the MIDI component."
     pause_on_error
     exit 1
   }
@@ -76,7 +76,7 @@ SERVER_PID=$!
 for _ in {1..40}; do
   if curl -fsS "http://127.0.0.1:8321/__ec4_bridge_health" >/dev/null 2>&1; then
     echo
-    echo "Chrome wird geöffnet …"
+    echo "Opening Chrome …"
     open -a "Google Chrome" "$URL"
     wait "$SERVER_PID"
     exit $?
@@ -87,6 +87,6 @@ for _ in {1..40}; do
   sleep 0.25
 done
 
-echo "FEHLER: Der EC4 Editor konnte nicht gestartet werden."
+echo "ERROR: Could not start the EC4 Editor."
 pause_on_error
 exit 1

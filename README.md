@@ -1,6 +1,12 @@
 # Faderfox Controller Editor (Web-MIDI)
 This project offers browser-based editors for MIDI controllers by [faderfox.de](http://faderfox.de).
 
+> **About this fork** — This repository is a maintained fork of the original
+> [faderfox-editor](https://github.com/privatepublic-de/faderfox-editor) by Peter Witzel. It adds
+> copy/paste and drag & drop workflows to the EC4 editor (see *New features of this fork* below)
+> and includes a native CoreMIDI bridge, so the editor can be run locally on macOS with a
+> double-click — no web server or deployment required.
+
 To use this editor you need a Web-MIDI-enabled webbrowser. Currently only Google Chrome (since Version 49 with sysex-support) and [Chromium](https://www.chromium.org/Home) support Web-MIDI.
 
 ## EC4 Editor
@@ -9,7 +15,7 @@ Editor for the [EC4 Encoder Controller](http://www.faderfox.de/ec4.html). You ca
 
 ## Local EC4 editor on macOS
 
-Connect the EC4 via USB and double-click **`EC4 Editor starten.command`**. The first start installs the local CoreMIDI bridge automatically. Keep the opened Terminal window running while using the editor; close it or press `Ctrl+C` to stop the server. If the bridge is already running (also as a background process on port 8321), the script just opens Chrome at `http://localhost:8321/ec4-v2/`.
+Connect the EC4 via USB and double-click **`Start EC4 Editor.command`**. The first start installs the local CoreMIDI bridge automatically. Keep the opened Terminal window running while using the editor; close it or press `Ctrl+C` to stop the server. If the bridge is already running (also as a background process on port 8321), the script just opens Chrome at `http://localhost:8321/ec4-v2/`.
 
 ### New features of this fork (v2.0b+)
 
@@ -29,3 +35,7 @@ Editor for the [PC4 Pot Controller](http://faderfox.de/pc4.html). You can find a
 
 
 This software was developed in co-operation with faderfox.
+
+## License
+
+MIT — see [LICENSE.txt](LICENSE.txt). Original editor © 2017 Peter Witzel; fork additions © 2026 Sascha Radojkovic.
