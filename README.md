@@ -4,8 +4,8 @@ This project offers browser-based editors for MIDI controllers by [faderfox.de](
 > **About this fork** — This repository is a maintained fork of the original
 > [faderfox-editor](https://github.com/privatepublic-de/faderfox-editor) by Peter Witzel. It adds
 > copy/paste and drag & drop workflows to the EC4 editor (see *New features of this fork* below)
-> and includes a native CoreMIDI bridge, so the editor can be run locally on macOS with a
-> double-click — no web server or deployment required.
+> and includes a native CoreMIDI bridge, so the editor runs locally on macOS with a simple
+> double-click — the small local server is set up and started for you.
 
 ![EC4 editor showing setups, groups and encoder settings](screenshots/editor-overview.png)
 
@@ -19,13 +19,13 @@ Editor for the [EC4 Encoder Controller](http://www.faderfox.de/ec4.html). You ca
 
 ## Local EC4 editor on macOS
 
-Connect the EC4 via USB and double-click **`Start EC4 Editor.command`**. The first start installs the local CoreMIDI bridge automatically. Keep the opened Terminal window running while using the editor; close it or press `Ctrl+C` to stop the server. If the bridge is already running (also as a background process on port 8321), the script just opens Chrome at `http://localhost:8321/ec4-v2/`.
+Connect the EC4 via USB and double-click **`Start EC4 Editor.command`**. The first start installs the local CoreMIDI bridge automatically. Keep the opened Terminal window running while using the editor; close it or press `Ctrl+C` to stop it. If a bridge is already running on port 8321, the script just opens Chrome at `http://localhost:8321/ec4-v2/`. Without a connected device the editor still starts in offline mode, so you can edit and save files.
 
-### New features of this fork (v2.0b+)
+### New features of this fork
 
 These features are additions to the original editor and only apply to the EC4 (FW 2.x):
 
-- **Copy / paste individual encoders** – check the checkbox in the top-left corner of encoder rows (green row = selected), then use **Copy Encoders** / **Paste Encoders** in the preset toolbar. In the paste dialog, click the target positions; the mapping follows your click order (each field shows its number).
+- **Copy / paste individual encoders** – tick the checkbox in the bottom-left corner of an encoder cell (the cell tints green), then use **Copy Encoders** / **Paste Encoders**. In the paste dialog, click the target positions in the order you want them filled (each position shows its paste number).
 - **Partial copy** – the Copy Encoders dialog has two checkboxes, *Encoder (knob) settings* and *Push button settings* (both checked by default), so you can copy only the rotary or only the push-button part of an encoder.
 - **Drag & drop encoder swap** – drag the knob disc of an encoder onto another encoder row of the same group to exchange both encoders completely (all settings, name and push-button settings).
 - **Drag & drop group swap** – in the setup/group list on the left, drag a whole group row onto another group of the same setup to exchange both groups (name + all 16 encoders).
@@ -40,7 +40,7 @@ All swaps ask for confirmation before changing anything. After editing, use **Se
 Editor for the [PC4 Pot Controller](http://faderfox.de/pc4.html). You can find a ready-to-use version under [https://www.privatepublic.de/faderfox-editor/pc4](https://www.privatepublic.de/faderfox-editor/pc4).
 
 
-This software was developed in co-operation with faderfox.
+This software was developed in co-operation with faderfox — this applies to the original editor, not to the fork additions in this repository.
 
 ## License
 
